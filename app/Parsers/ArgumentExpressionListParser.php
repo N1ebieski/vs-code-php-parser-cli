@@ -14,6 +14,9 @@ class ArgumentExpressionListParser extends AbstractParser
 
     public function parse($node)
     {
+        // Temporary fix. I don't know why foreach directive has autocompleting true as default
+        $this->context->autocompleting = false;
+
         if ($this->context instanceof MethodCall) {
             return $this->context->arguments;
         }
