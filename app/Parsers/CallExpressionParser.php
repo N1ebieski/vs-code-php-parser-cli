@@ -36,7 +36,9 @@ class CallExpressionParser extends AbstractParser
         if ($parent instanceof SourceFileNode) {
             $statements = $parent->statementList;
 
-            $this->context->autocompleting &= array_search(EmptyStatement::class, array_map('get_class', $statements)) === false;
+            $lastStatement = end($statements);
+
+            $this->context->autocompleting &= !$lastStatement instanceof EmptyStatement;
         }
 
         return $this->context;
