@@ -15,8 +15,23 @@ class VariableParser extends AbstractParser
      */
     protected AbstractContext $context;
 
+    /**
+     * Check if the node has a object operator and
+     * is a last element in the string
+     */
+    private function hasObjectOperator(Variable $node): bool
+    {
+        $name = $node->getName();
+
+        return preg_match('/\$' . $name . '->;$/s', $node->getFileContents());
+    }
+
     public function parse(Variable $node)
     {
+        if ($this->hasObjectOperator($node)) {
+            $this->context->autocompleting = true;
+        }
+
         $this->context->name = $node->getName();
 
         if (Settings::$capturePosition) {
