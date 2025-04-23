@@ -51,10 +51,7 @@ class InlineHtmlParser extends AbstractParser
         }
 
         $this->parseBladeContent(Document::fromText(
-            Str::of($node->getText())
-                ->pipe(fn (string $str): string => $this->replaceMultibyteChars($str))
-                ->pipe(fn (string $str): string => $this->replaceLastDoubleQuoteToSingleQuote($str))
-                ->toString()
+            $this->replaceMultibyteChars($node->getText())
         ));
 
         if (count($this->items)) {
@@ -67,34 +64,6 @@ class InlineHtmlParser extends AbstractParser
         }
 
         return $this->context;
-    }
-
-    /**
-     * If a last character is a double quote, for example:
-     *
-     * {{ config("
-     *
-     * then Stillat\BladeParser\Document\Document::fromText returns autocompletingIndex: 1
-     * instead 0. Probably the parser turns the string into something like this:
-     *
-     * "{{ config(";"
-     *
-     * and returns ";" as an argument.
-     *
-     * This function replaces the last double quote with a single quote.
-     */
-    private function replaceLastDoubleQuoteToSingleQuote(string $text): string
-    {
-        if (substr($text, -1) === '"') {
-            $countDoubleQuotes = substr_count($text, '"');
-
-            // We have to exclude cases with an even number of double quotes
-            if ($countDoubleQuotes % 2 !== 0) {
-                return substr($text, 0, -1) . "'";
-            }
-        }
-
-        return $text;
     }
 
     /**
