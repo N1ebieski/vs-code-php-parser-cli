@@ -38,17 +38,6 @@ class InlineHtmlParser extends AbstractParser
 
     protected array $items = [];
 
-    /**
-     * Stillat\BladeParser\Document\Document::fromText treats multibyte characters
-     * as indentations and spaces resulting in a miscalculated Node position.
-     *
-     * This function replaces the multibyte characters with a single, placeholder character
-     */
-    private function replaceMultibyteChars(string $text, string $placeholder = '*'): string
-    {
-        return preg_replace('/[^\x00-\x7F]/u', $placeholder, $text);
-    }
-
     public function parse(InlineHtml $node)
     {
         if ($node->getStartPosition() > 0) {
@@ -62,7 +51,10 @@ class InlineHtmlParser extends AbstractParser
         }
 
         $this->parseBladeContent(Document::fromText(
-            $this->replaceMultibyteChars($node->getText())
+            Str::of($node->getText())
+                ->pipe(fn (string $str): string => $this->replaceMultibyteChars($str))
+                ->pipe(fn (string $str): string => $this->replaceLastDoubleQuoteToSingleQuote($str))
+                ->toString()
         ));
 
         if (count($this->items)) {
@@ -75,6 +67,45 @@ class InlineHtmlParser extends AbstractParser
         }
 
         return $this->context;
+    }
+
+    /**
+     * If a last character is a double quote, for example:
+     *
+     * {{ config("
+     *
+     * then Stillat\BladeParser\Document\Document::fromText returns autocompletingIndex: 1
+     * instead 0. Probably the parser turns the string into something like this:
+     *
+     * "{{ config(";"
+     *
+     * and returns ";" as an argument.
+     *
+     * This function replaces the last double quote with a single quote.
+     */
+    private function replaceLastDoubleQuoteToSingleQuote(string $text): string
+    {
+        if (substr($text, -1) === '"') {
+            $countDoubleQuotes = substr_count($text, '"');
+
+            // We have to exclude cases with an even number of double quotes
+            if ($countDoubleQuotes % 2 !== 0) {
+                return substr($text, 0, -1) . "'";
+            }
+        }
+
+        return $text;
+    }
+
+    /**
+     * Stillat\BladeParser\Document\Document::fromText treats multibyte characters
+     * as indentations and spaces resulting in a miscalculated Node position.
+     *
+     * This function replaces the multibyte characters with a single, placeholder character
+     */
+    private function replaceMultibyteChars(string $text, string $placeholder = '*'): string
+    {
+        return preg_replace('/[^\x00-\x7F]/u', $placeholder, $text);
     }
 
     protected function parseBladeContent($node)
