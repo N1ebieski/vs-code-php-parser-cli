@@ -52,12 +52,18 @@ class InlineHtmlParser extends AbstractParser
     private function createDocument(string $text): Document
     {
         // First, we need to parse the text with the multibyte characters
-        $document = Document::fromText($text);
+        $document = Document::fromText(
+            document: $text,
+            customComponentTags: ['flux']
+        );
 
         // Then, we need to parse the text with multibyte characters replaced by placeholders
         // because Stillat\BladeParser\Document\Document::fromText treats multibyte characters
         // as indentations and spaces resulting in a miscalculated Node position
-        $documentWithPlaceholders = Document::fromText($this->replaceMultibyteChars($text));
+        $documentWithPlaceholders = Document::fromText(
+            document: $this->replaceMultibyteChars($text),
+            customComponentTags: ['flux']
+        );
 
         // Finally, we need to update the Node positions from original text
         $nodesWithPlaceholders = $documentWithPlaceholders->getNodes();
@@ -141,6 +147,16 @@ class InlineHtmlParser extends AbstractParser
 
                     $range->start->character = $parameter->position->startColumn + $firstQuotePosition - $selfClosingCharacter;
                     $range->end->character = $parameter->position->startColumn + $firstQuotePosition + $rangeCharacters - $selfClosingCharacter;
+
+                    // Temporary fix for Stillat/blade-parser
+                    // If a component prefix is not x (for example flux:input instead x-flux::input)
+                    // then Stillat/blade-parser returns miscalculated positions. I don't know why
+                    if ($node->componentPrefix === "flux") {
+                        $prefixCharacters = strlen($node->componentPrefix) - 1;
+
+                        $range->start->character += $prefixCharacters + $selfClosingCharacter;
+                        $range->end->character += $prefixCharacters + $selfClosingCharacter;
+                    }
                 }
 
                 $range->start->line += $this->startLine + $parameter->position->startLine - 2;
