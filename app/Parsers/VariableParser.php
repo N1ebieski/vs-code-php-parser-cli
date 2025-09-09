@@ -33,9 +33,9 @@ class VariableParser extends AbstractParser
             $this->context->autocompleting = true;
         }
 
-        $this->context->name = $node->getName();
+        $this->context->varName = $node->getName();
 
-        $result = $this->context->searchForVar($this->context->name);
+        $result = $this->context->searchForVar($this->context->varName);
 
         if (is_string($result)) {
             $this->context->className = $result;
