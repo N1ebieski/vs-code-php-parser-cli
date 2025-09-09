@@ -6,6 +6,7 @@ use App\Contexts\AbstractContext;
 use App\Contexts\Variable as VariableContext;
 use App\Parser\Settings;
 use Microsoft\PhpParser\Node\Expression\Variable;
+use Microsoft\PhpParser\Node\Statement\ExpressionStatement;
 use Microsoft\PhpParser\PositionUtilities;
 
 class VariableParser extends AbstractParser
@@ -33,6 +34,12 @@ class VariableParser extends AbstractParser
         }
 
         $this->context->name = $node->getName();
+
+        $result = $this->context->searchForVar($this->context->name);
+
+        if (is_string($result)) {
+            $this->context->className = $result;
+        }
 
         if (Settings::$capturePosition) {
             $range = PositionUtilities::getRangeFromPosition(

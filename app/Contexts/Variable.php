@@ -6,7 +6,9 @@ class Variable extends AbstractContext
 {
     public bool $isAbleToAutocomplete = true;
 
-    public ?string $name = null;
+    public ?string $varName = null;
+
+    public ?string $className = null;
 
     protected bool $hasChildren = false;
 
@@ -18,7 +20,8 @@ class Variable extends AbstractContext
     public function castToArray(): array
     {
         return [
-            'name' => $this->name,
+            'name' => $this->varName,
+            'className' => $this->className,
         ];
     }
 }
