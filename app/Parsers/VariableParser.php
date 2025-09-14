@@ -45,7 +45,7 @@ class VariableParser extends AbstractParser
     {
         $name = $node->getName();
 
-        return preg_match('/\$' . $name . '->;$/s', $node->getFileContents());
+        return preg_match('/\$' . preg_quote($name, '/') . '->;$/s', $node->getFileContents());
     }
 
     private function getLatestDocComment(Node $node): ?string
