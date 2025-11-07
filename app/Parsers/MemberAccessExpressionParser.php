@@ -80,6 +80,12 @@ class MemberAccessExpressionParser extends AbstractParser
                 $result = $variableContext->className;
 
                 if (!$result) {
+                    $varName = $child->getName();
+
+                    $result = $this->context->searchForVar($varName);
+                }
+
+                if (!$result) {
                     return $this->context;
                 }
 

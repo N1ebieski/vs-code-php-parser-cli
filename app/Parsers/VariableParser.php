@@ -88,7 +88,7 @@ class VariableParser extends AbstractParser
             // We need to remove first character because it's always $
             ->first(fn (VarTagValueNode $valueNode) => substr($valueNode->variableName, 1) === $this->context->name);
 
-        if (! $varTagValue?->type instanceof IdentifierTypeNode) {
+        if (!$varTagValue?->type instanceof IdentifierTypeNode) {
             return null;
         }
 
@@ -102,12 +102,12 @@ class VariableParser extends AbstractParser
         $uses = [];
 
         foreach ($node->getRoot()->getDescendantNodes() as $node) {
-            if (! $node instanceof NamespaceUseDeclaration) {
+            if (!$node instanceof NamespaceUseDeclaration) {
                 continue;
             }
 
             foreach ($node->useClauses->children ?? [] as $clause) {
-                if (! $clause instanceof NamespaceUseClause) {
+                if (!$clause instanceof NamespaceUseClause) {
                     continue;
                 }
 
