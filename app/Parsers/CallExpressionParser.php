@@ -7,6 +7,8 @@ use App\Contexts\MethodCall;
 use Microsoft\PhpParser\MissingToken;
 use Microsoft\PhpParser\Node\Expression\CallExpression;
 use Microsoft\PhpParser\Node\QualifiedName;
+use Microsoft\PhpParser\Node\SourceFileNode;
+use Microsoft\PhpParser\Node\Statement\EmptyStatement;
 
 class CallExpressionParser extends AbstractParser
 {
@@ -26,6 +28,18 @@ class CallExpressionParser extends AbstractParser
         }
 
         $this->context->autocompleting = $node->closeParen instanceof MissingToken;
+
+        // Temporary fix for @for/@foreach directive. I don't know why,
+        // but parser always returns closeParen = MissingToken for @foreach($examples as $example)
+        $parent = $node->getParent()?->getParent();
+
+        if ($parent instanceof SourceFileNode) {
+            $statements = $parent->statementList;
+
+            $lastStatement = end($statements);
+
+            $this->context->autocompleting &= !$lastStatement instanceof EmptyStatement;
+        }
 
         return $this->context;
     }
